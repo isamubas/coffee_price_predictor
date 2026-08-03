@@ -12,7 +12,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import mean_absolute_error, r2_score
 from sklearn.model_selection import TimeSeriesSplit
 
 DATA_PROCESSED = Path(__file__).resolve().parent / "data" / "processed"
@@ -185,18 +185,47 @@ y = grades_converted.loc[model_df.index, target]
 
 if len(model_df) >= 12:
     # Walk-forward evaluation — a random split would let the model peek at the
-    # future, which badly overstates accuracy on a trending series.
-    actuals, predicted = [], []
+    # future, which badly overstates accuracy on a trending series. We also
+    # score a random-walk baseline (carry last observed price forward), because
+    # on price series that baseline is the bar any model has to clear.
+    actuals, predicted, naive = [], [], []
     for train_idx, test_idx in TimeSeriesSplit(n_splits=4).split(X):
         fold = LinearRegression().fit(X.iloc[train_idx], y.iloc[train_idx])
         predicted.extend(fold.predict(X.iloc[test_idx]))
+        carried = y.iloc[train_idx].iloc[-1]
+        for i in test_idx:
+            naive.append(carried)
+            carried = y.iloc[i]
         actuals.extend(y.iloc[test_idx])
-    mae = mean_absolute_error(actuals, predicted)
 
-    c1, c2, c3 = st.columns(3)
-    c1.metric("MAE (walk-forward CV)", fmt(mae))
-    c2.metric("As % of mean price", f"{mae / y.mean() * 100:.1f}%")
-    c3.metric("Observations", len(model_df))
+    mae = mean_absolute_error(actuals, predicted)
+    r2_oos = r2_score(actuals, predicted)
+    naive_mae = mean_absolute_error(actuals, naive)
+    naive_r2 = r2_score(actuals, naive)
+    r2_in = r2_score(y, LinearRegression().fit(X, y).predict(X))
+
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("R² in-sample", f"{r2_in:.3f}")
+    c2.metric("R² walk-forward", f"{r2_oos:.3f}", delta="worse than mean" if r2_oos < 0 else None)
+    c3.metric("MAE walk-forward", fmt(mae))
+    c4.metric("Observations", len(model_df))
+
+    if r2_oos < naive_r2:
+        st.error(
+            f"**This regression does not work yet.** In-sample R² of {r2_in:.2f} looks "
+            f"strong, but walk-forward R² is {r2_oos:.2f} — a negative value means it "
+            "predicts held-out months *worse than simply guessing the training mean*.\n\n"
+            f"A random-walk baseline (carry last month's price forward) gets "
+            f"R² {naive_r2:.2f} and MAE {fmt(naive_mae)}, versus the regression's "
+            f"MAE {fmt(mae)}. **The naive baseline beats the model.**\n\n"
+            "This is the 30-month trending dataset overfitting, exactly as the data-quality "
+            "note warns. Real per-grade history is needed before the model means anything."
+        )
+    else:
+        st.success(
+            f"Regression (R² {r2_oos:.2f}, MAE {fmt(mae)}) beats the random-walk "
+            f"baseline (R² {naive_r2:.2f}, MAE {fmt(naive_mae)})."
+        )
 
     model = LinearRegression().fit(X, y)
     fitted = pd.DataFrame(
@@ -210,6 +239,11 @@ if len(model_df) >= 12:
     )
     chart.update_layout(yaxis_title=currency)
     st.plotly_chart(chart, use_container_width=True)
+    st.caption(
+        "Note this chart is the *in-sample* fit — the model saw every point it "
+        "is drawing. It looks good for the same reason in-sample R² looks good, "
+        "and is not evidence the model forecasts."
+    )
 
     st.markdown("**Feature coefficients** (full-sample fit)")
     st.dataframe(
