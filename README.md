@@ -118,11 +118,22 @@ and `static` cannot run Python. So this app is built with **Gradio**, the only
 free SDK that can run the model.
 
 1. Create a new Space, choose SDK **Gradio**, template **Blank**, hardware
-   **CPU basic** (free).
+   **ZeroGPU** (on free accounts ZeroGPU is the free tier; CPU Basic requires
+   PRO).
 2. Push this repo's contents to it.
 3. Rename `README_HF.md` to `README.md` in the Space — it carries the required
    YAML frontmatter (`sdk: gradio`, `app_file: app.py`) that GitHub would
    otherwise render as plain text.
+
+**On ZeroGPU:** this app never requests a GPU. ZeroGPU allocates one only when
+a function decorated with `@spaces.GPU` is called, and nothing here is
+decorated — the workload is pandas/scikit-learn/plotly, which is CPU work that
+finishes in milliseconds. The app therefore runs normally and consumes **none**
+of the daily GPU quota. Do not add `@spaces.GPU` to these functions; it would
+spend quota for no benefit.
+
+Free personal accounts can host up to 2 ZeroGPU Spaces, and the account must
+have a verified email and be older than 30 days.
 
 ## Licence
 
