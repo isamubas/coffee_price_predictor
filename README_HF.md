@@ -7,7 +7,7 @@ sdk: static
 app_file: index.html
 pinned: false
 license: apache-2.0
-short_description: Predicting Ugandan coffee prices by grade from global drivers
+short_description: Predicting Uganda coffee prices from global drivers
 ---
 
 # Uganda Coffee Price Predictor
