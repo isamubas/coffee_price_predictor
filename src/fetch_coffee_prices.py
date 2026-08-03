@@ -5,53 +5,24 @@ Sources:
   Uganda grows ~80% Robusta, so this is the primary series.
 - Yahoo Finance (yfinance): daily ICE Arabica futures (KC=F), for higher-frequency signal.
 """
-import urllib.request
 from pathlib import Path
 
-import openpyxl
 import pandas as pd
 import yfinance as yf
 
-DATA_RAW = Path(__file__).resolve().parent.parent / "data" / "raw"
-DATA_PROCESSED = Path(__file__).resolve().parent.parent / "data" / "processed"
+from pink_sheet import fetch_pink_sheet_columns
 
-PINK_SHEET_URL = (
-    "https://thedocs.worldbank.org/en/doc/"
-    "74e8be41ceb20fa0da750cda2f6b9e4e-0050012026/related/"
-    "CMO-Historical-Data-Monthly.xlsx"
-)
+DATA_PROCESSED = Path(__file__).resolve().parent.parent / "data" / "processed"
 
 
 def fetch_pink_sheet_coffee() -> pd.DataFrame:
     """Download World Bank monthly Arabica/Robusta coffee prices ($/kg)."""
-    xlsx_path = DATA_RAW / "pinksheet.xlsx"
-    urllib.request.urlretrieve(PINK_SHEET_URL, xlsx_path)
-
-    wb = openpyxl.load_workbook(xlsx_path, read_only=True)
-    ws = wb["Monthly Prices"]
-    rows = list(ws.iter_rows(values_only=True))
-    header = rows[4]
-
-    arabica_col = header.index("Coffee, Arabica")
-    robusta_col = header.index("Coffee, Robusta")
-
-    records = []
-    for row in rows[6:]:
-        period = row[0]
-        if not period:
-            continue
-        records.append(
-            {
-                "period": period,
-                "arabica_usd_kg": row[arabica_col],
-                "robusta_usd_kg": row[robusta_col],
-            }
-        )
-
-    df = pd.DataFrame(records)
-    df["date"] = pd.to_datetime(df["period"].str.replace("M", "-"), format="%Y-%m")
-    df = df.drop(columns="period").set_index("date").sort_index()
-    return df
+    return fetch_pink_sheet_columns(
+        {
+            "Coffee, Arabica": "arabica_usd_kg",
+            "Coffee, Robusta": "robusta_usd_kg",
+        }
+    )
 
 
 def fetch_arabica_futures_daily(period: str = "5y") -> pd.DataFrame:
@@ -61,7 +32,6 @@ def fetch_arabica_futures_daily(period: str = "5y") -> pd.DataFrame:
 
 
 def main() -> None:
-    DATA_RAW.mkdir(parents=True, exist_ok=True)
     DATA_PROCESSED.mkdir(parents=True, exist_ok=True)
 
     monthly = fetch_pink_sheet_coffee()
