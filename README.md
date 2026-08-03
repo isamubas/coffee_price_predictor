@@ -25,6 +25,14 @@ sources rather than relying solely on sparse local data.
 | Arabica + Robusta coffee prices | [World Bank Pink Sheet](https://www.worldbank.org/en/research/commodity-markets) | Monthly, since 1960 | `src/fetch_coffee_prices.py` |
 | ICE Arabica coffee futures | Yahoo Finance (`KC=F`) | Daily | `src/fetch_coffee_prices.py` |
 | USD/UGX exchange rate | Yahoo Finance (`UGX=X`) | Daily, ~10y history | `src/fetch_exchange_rate.py` |
+| Brent crude oil price | World Bank Pink Sheet | Monthly, since 1960 | `src/fetch_oil_price.py` |
+| US Fed funds rate | [FRED](https://fred.stlouisfed.org/series/FEDFUNDS) (direct CSV, no key) | Monthly | `src/fetch_fed_rate.py` |
+
+`src/merge_dataset.py` joins all of the above into `data/processed/merged_monthly.csv`
+and prints correlations against USD/UGX. So far the Fed funds rate is the
+strongest single driver (r ≈ 0.39), ahead of oil (r ≈ 0.25-0.28) and coffee
+prices (r ≈ -0.06 to -0.22) — consistent with UGX being a frontier currency
+more exposed to broad USD strength than to any one export commodity.
 
 **Note:** Bank of Uganda (bou.or.ug) publishes official exchange rates and
 coffee export volumes, but the site is JS-rendered with no CSV/API export —
@@ -43,8 +51,9 @@ Output lands in `data/processed/` as CSVs.
 
 ## Roadmap
 
-- [ ] Pull Brent oil prices (World Bank Pink Sheet also has this)
+- [x] Pull Brent oil prices (World Bank Pink Sheet)
+- [x] Pull US Fed funds rate (FRED)
+- [x] Merge series into a single aligned monthly dataset
 - [ ] Add rainfall/climate data (CHIRPS, East Africa coverage)
-- [ ] Merge series into a single aligned monthly dataset
 - [ ] Baseline regression/GBM model predicting UGX/USD or inflation
 - [ ] Simple dashboard (Streamlit) for visualization
