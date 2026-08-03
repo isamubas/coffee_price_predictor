@@ -25,4 +25,4 @@ series rather than 6. See the in-app data-quality note and the main repo
 README before drawing conclusions.
 
 Source and methodology:
-https://github.com/<your-username>/uganda-coffee-price-predictor
+https://github.com/isamubas/coffee_price_predictor
