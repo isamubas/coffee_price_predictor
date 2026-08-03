@@ -92,6 +92,9 @@ def snapshot_to_frame(payload: dict) -> pd.DataFrame:
                 "currency": "UGX/kg" if is_farmgate else "USc/kg",
                 "level": "farmgate" if is_farmgate else "fob",
                 "updated_utc": payload["prices"]["updated_utc"],
+                # Carried on every row so the app can convert between
+                # currencies without refetching.
+                "usd_ugx_rate": payload["fx"]["usd_ugx"],
             }
         )
     return pd.DataFrame(records)

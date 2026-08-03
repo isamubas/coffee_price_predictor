@@ -60,21 +60,55 @@ def load_snapshot() -> pd.DataFrame:
 df = load_merged()
 snapshot = load_snapshot()
 
+# --- Currency -------------------------------------------------------------
+# Upstream quotes export grades in US cents/kg and farmgate in UGX/kg. We
+# normalise everything to one unit so grades are actually comparable.
+CURRENCIES = {
+    "UGX/kg": {"decimals": 0, "suffix": "UGX/kg"},
+    "USD/kg": {"decimals": 2, "suffix": "$/kg"},
+    "US cents/kg": {"decimals": 2, "suffix": "¢/kg"},
+}
+
+currency = st.sidebar.radio("Currency", list(CURRENCIES), index=0)
+st.sidebar.caption(
+    "Uganda grades are quoted upstream in US cents/kg (export) and UGX/kg "
+    "(farmgate). Historical values convert at each month's own USD/UGX rate."
+)
+
+fx_now = float(snapshot["usd_ugx_rate"].iloc[0])
+
+
+def to_currency(values, source_unit: str, rate):
+    """Convert a price series/scalar from its source unit into `currency`."""
+    usd = values / 100 if source_unit == "USc/kg" else values / rate
+    if currency == "USD/kg":
+        return usd
+    if currency == "US cents/kg":
+        return usd * 100
+    return usd * rate
+
+
+def fmt(value) -> str:
+    spec = CURRENCIES[currency]
+    return f"{value:,.{spec['decimals']}f} {spec['suffix']}"
+
+
 # --- Current prices across every grade -------------------------------------
 st.subheader("Current Uganda coffee prices")
+st.caption(f"Shown in {currency} · converted at USD/UGX {fx_now:,.2f}")
 
 fob = snapshot[snapshot["level"] == "fob"]
 farmgate = snapshot[snapshot["level"] == "farmgate"]
 
-st.markdown("**Export grades** (FOB Kampala, US cents/kg)")
+st.markdown("**Export grades** (FOB Kampala)")
 fob_cols = st.columns(3)
 for i, row in enumerate(fob.itertuples()):
-    fob_cols[i % 3].metric(row.grade, f"{row.price:,.2f} ¢/kg")
+    fob_cols[i % 3].metric(row.grade, fmt(to_currency(row.price, "USc/kg", fx_now)))
 
-st.markdown("**Farmgate** (what farmers receive, UGX/kg)")
+st.markdown("**Farmgate** (what farmers actually receive)")
 fg_cols = st.columns(3)
 for i, row in enumerate(farmgate.itertuples()):
-    fg_cols[i % 3].metric(row.grade, f"{row.price:,.0f} UGX/kg")
+    fg_cols[i % 3].metric(row.grade, fmt(to_currency(row.price, "UGX/kg", fx_now)))
 
 st.caption(f"Snapshot from ugandacoffeeprices.com (UCDA), updated {snapshot['updated_utc'].iloc[0]}")
 
@@ -97,18 +131,24 @@ parse UCDA's published PDF reports.
         """
     )
 
+# Grade history is stored in USc/kg; convert at each month's own FX rate so
+# UGX values reflect what the price was actually worth at the time.
+grades_converted = df[TARGET_COLS].apply(
+    lambda col: to_currency(col, "USc/kg", df["usd_ugx_rate"])
+)
+
 # --- History ---------------------------------------------------------------
 st.subheader("Price history by grade")
 grade_choice = st.multiselect(
-    "Grades to plot (US cents/kg)",
+    f"Grades to plot ({currency})",
     options=TARGET_COLS,
     default=["bugisu_aa", "screen_18"],
     format_func=lambda c: GRADE_LABELS[c],
 )
 if grade_choice:
-    plot_df = df.reset_index()[["date"] + grade_choice].rename(columns=GRADE_LABELS)
+    plot_df = grades_converted[grade_choice].rename(columns=GRADE_LABELS).reset_index()
     fig = px.line(plot_df, x="date", y=[GRADE_LABELS[c] for c in grade_choice])
-    fig.update_layout(yaxis_title="US cents/kg", legend_title="Grade")
+    fig.update_layout(yaxis_title=currency, legend_title="Grade")
     st.plotly_chart(fig, use_container_width=True)
 
 # --- Drivers ---------------------------------------------------------------
@@ -121,9 +161,17 @@ if driver_choice:
         px.line(df.reset_index(), x="date", y=driver_choice), use_container_width=True
     )
 
-st.markdown("**Correlation of each driver with each grade**")
-corr = pd.DataFrame({t: df[FEATURE_COLS].corrwith(df[t]) for t in TARGET_COLS})
+st.markdown(f"**Correlation of each driver with each grade** (grades in {currency})")
+corr = pd.DataFrame(
+    {t: df[FEATURE_COLS].corrwith(grades_converted[t]) for t in TARGET_COLS}
+)
 st.dataframe(corr.round(3), use_container_width=True)
+if currency == "UGX/kg":
+    st.caption(
+        "In UGX the grade series is itself a function of USD/UGX, so its "
+        "correlation with `usd_ugx_rate` is partly mechanical. Switch to USD/kg "
+        "to see the underlying relationship."
+    )
 
 # --- Model -----------------------------------------------------------------
 st.subheader("Baseline model")
@@ -132,7 +180,8 @@ target = st.selectbox(
 )
 
 model_df = df.dropna(subset=FEATURE_COLS + [target])
-X, y = model_df[FEATURE_COLS], model_df[target]
+X = model_df[FEATURE_COLS]
+y = grades_converted.loc[model_df.index, target]
 
 if len(model_df) >= 12:
     # Walk-forward evaluation — a random split would let the model peek at the
@@ -145,7 +194,7 @@ if len(model_df) >= 12:
     mae = mean_absolute_error(actuals, predicted)
 
     c1, c2, c3 = st.columns(3)
-    c1.metric("MAE (walk-forward CV)", f"{mae:,.1f} ¢/kg")
+    c1.metric("MAE (walk-forward CV)", fmt(mae))
     c2.metric("As % of mean price", f"{mae / y.mean() * 100:.1f}%")
     c3.metric("Observations", len(model_df))
 
@@ -153,10 +202,14 @@ if len(model_df) >= 12:
     fitted = pd.DataFrame(
         {"actual": y, "fitted": model.predict(X)}, index=model_df.index
     ).reset_index()
-    st.plotly_chart(
-        px.line(fitted, x="date", y=["actual", "fitted"], title=f"{GRADE_LABELS[target]}: actual vs fitted"),
-        use_container_width=True,
+    chart = px.line(
+        fitted,
+        x="date",
+        y=["actual", "fitted"],
+        title=f"{GRADE_LABELS[target]}: actual vs fitted",
     )
+    chart.update_layout(yaxis_title=currency)
+    st.plotly_chart(chart, use_container_width=True)
 
     st.markdown("**Feature coefficients** (full-sample fit)")
     st.dataframe(
@@ -167,7 +220,10 @@ if len(model_df) >= 12:
     )
     st.caption(
         "Walk-forward CV respects time order. With 30 observations and "
-        "collinear drivers, individual coefficients are not reliable causal estimates."
+        "collinear drivers, individual coefficients are not reliable causal "
+        "estimates. Coefficients are in "
+        f"{currency} per unit of each driver, so they rescale with the "
+        "currency you pick."
     )
 else:
     st.warning("Not enough overlapping data to train a model yet.")

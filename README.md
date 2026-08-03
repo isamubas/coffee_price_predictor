@@ -92,6 +92,13 @@ A Streamlit app (`app.py`) shows current prices across all 12 grades, price
 history, driver correlations, and a baseline regression per grade evaluated
 with walk-forward (time-ordered) cross-validation.
 
+Prices display in **UGX/kg by default**, switchable to USD/kg or US cents/kg
+from the sidebar. Upstream quotes mix units (export grades in US cents/kg,
+farmgate in UGX/kg), so normalising to one unit is what makes the
+farmgate-vs-export gap directly comparable — e.g. Kiboko at $1.48/kg against
+Screen 18 FOB at $1.88/kg. Historical values convert at each month's own
+USD/UGX rate rather than today's.
+
 ```bash
 streamlit run app.py
 ```
