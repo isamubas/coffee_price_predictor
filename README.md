@@ -45,6 +45,23 @@ trackable against well-documented global data.
 `src/merge_dataset.py` joins these into `data/processed/merged_monthly.csv`,
 with the Uganda grades as prediction targets and everything else as features.
 
+## Model status
+
+The baseline regression **currently loses to a random-walk baseline** — it does
+worse than assuming next month's price equals this month's (walk-forward R²
+−0.66 versus 0.84). In-sample R² is 0.88, and the gap between those two numbers
+is the point.
+
+The short version: the strong correlations are shared trend, not signal. On
+price *levels* USD/UGX correlates −0.90 with Bugisu AA; on month-to-month
+*changes* it is only −0.28, and the Fed funds rate falls from −0.53 to 0.02.
+
+Full analysis with reproducible evidence: [notes/why-the-model-fails.md](notes/why-the-model-fails.md)
+
+```bash
+python src/diagnose_model.py   # regenerates every number in that note
+```
+
 ## ⚠️ Data quality caveats
 
 Read these before trusting any model output:
