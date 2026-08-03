@@ -65,9 +65,15 @@ Read these before trusting any model output:
    grades (kiboko, faq, arabica_parchment) are really UGX/kg. Corrected on
    ingest in `fetch_uganda_prices.py`.
 
-**The fix:** log the live JSON daily to accumulate genuine per-grade history,
-and/or parse UCDA's published PDF reports. Bank of Uganda (bou.or.ug) also
-publishes official data but is JS-rendered with no CSV/API export.
+**The fix is now running.** `src/log_daily_prices.py` records the live snapshot
+into `data/processed/uganda_grades_log.csv`, and
+`.github/workflows/daily-prices.yml` runs it every day at 06:15 UTC and commits
+any change. Once roughly 60+ days have accumulated, that log can replace the
+static series as the modelling target — with genuinely independent per-grade
+movement rather than one curve scaled six ways.
+
+Bank of Uganda (bou.or.ug) also publishes official data but is JS-rendered with
+no CSV/API export, so it remains a manual cross-check.
 
 ## Setup
 
@@ -105,11 +111,33 @@ streamlit run app.py
 
 ### Deploying to Hugging Face Spaces
 
-1. Create a new Space with SDK "Streamlit".
+Hugging Face no longer offers Streamlit as a native SDK — the only choices are
+`gradio`, `docker`, and `static`. This app therefore deploys as a **Docker
+Space**, using the `Dockerfile` at the repo root, which runs the unmodified
+Streamlit app on port 7860.
+
+1. Create a new Space and choose SDK **Docker** (blank template).
 2. Push this repo's contents to it.
-3. Replace the Space's `README.md` with `README_HF.md` (it carries the
-   required YAML frontmatter that GitHub would otherwise render as
-   plain text) — either rename it or copy its contents over.
+3. Replace the Space's `README.md` with `README_HF.md` — it carries the
+   required YAML frontmatter (`sdk: docker`, `app_port: 7860`) that GitHub
+   would otherwise render as plain text. Rename it or copy its contents over.
+
+## Licence
+
+Code is Apache-2.0 (see `LICENSE`). **The code licence does not cover the
+data.** If this project is ever used commercially, note that the sources
+differ:
+
+| Source | Licence | Commercial use |
+|---|---|---|
+| World Bank Pink Sheet | CC-BY 4.0 | Yes, with attribution |
+| FRED (Fed funds rate) | US federal data | Effectively yes |
+| Yahoo Finance (`UGX=X`, `KC=F`) | Yahoo ToS | No — "intended for personal use only" |
+| ugandacoffeeprices.com | None stated | Unclear; robots.txt permits crawling but that is not a content licence |
+
+Commercial use would require replacing the Yahoo FX/futures feeds (e.g. with
+ECB or exchangerate.host) and obtaining explicit permission from
+ugandacoffeeprices.com, or sourcing directly from UCDA.
 
 ## Roadmap
 
@@ -117,7 +145,8 @@ streamlit run app.py
 - [x] Pull Uganda grade prices as prediction targets
 - [x] Merge into aligned monthly dataset
 - [x] Baseline regression + dashboard
-- [ ] Daily logger to build genuine Uganda price history
+- [x] Daily logger to build genuine Uganda price history (`src/log_daily_prices.py`,
+      run automatically by `.github/workflows/daily-prices.yml`)
 - [ ] Add BRL/VND currencies and El Niño (ONI) index
 - [ ] Add rainfall data (CHIRPS, East Africa coverage)
 - [ ] Parse UCDA PDF reports for authoritative history

@@ -21,6 +21,8 @@ US cents/kg would be $55/kg, which is nonsense for dried cherry. We correct
 the unit on the way through.
 """
 import json
+import time
+import urllib.error
 import urllib.request
 from pathlib import Path
 
@@ -72,11 +74,24 @@ STATIC_HISTORY = {
 }
 
 
-def fetch_market_snapshot() -> dict:
-    """Fetch the live market-data.json payload."""
+def fetch_market_snapshot(attempts: int = 4, timeout: int = 30) -> dict:
+    """Fetch the live market-data.json payload, retrying transient failures.
+
+    Scheduled runs hit network blips often enough that a single timeout
+    should not fail the job, so we back off and retry before giving up.
+    """
     req = urllib.request.Request(MARKET_DATA_URL, headers={"User-Agent": USER_AGENT})
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        return json.loads(resp.read().decode())
+    for attempt in range(1, attempts + 1):
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                return json.loads(resp.read().decode())
+        except (urllib.error.URLError, TimeoutError, ConnectionError) as exc:
+            if attempt == attempts:
+                raise
+            backoff = 2**attempt
+            print(f"  fetch attempt {attempt}/{attempts} failed ({exc}); retrying in {backoff}s")
+            time.sleep(backoff)
+    raise RuntimeError("unreachable")  # pragma: no cover
 
 
 def snapshot_to_frame(payload: dict) -> pd.DataFrame:

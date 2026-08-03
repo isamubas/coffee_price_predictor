@@ -3,10 +3,11 @@ title: Uganda Coffee Price Predictor
 emoji: ☕
 colorFrom: green
 colorTo: yellow
-sdk: streamlit
-sdk_version: "1.53.0"
-app_file: app.py
+sdk: docker
+app_port: 7860
 pinned: false
+license: apache-2.0
+short_description: Predicting Ugandan coffee prices by grade from global drivers
 ---
 
 # Uganda Coffee Price Predictor

@@ -1,0 +1,44 @@
+name: Log daily coffee prices
+
+# The upstream feed only exposes a current snapshot, so genuine per-grade
+# history has to be accumulated by recording it once a day.
+on:
+  schedule:
+    # 06:15 UTC = 09:15 EAT, after the upstream feed's ~03:00 UTC refresh.
+    - cron: "15 6 * * *"
+  workflow_dispatch: # allow manual runs from the Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  log-prices:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Append today's snapshot
+        # Run from src/ so the sibling-module imports resolve, matching how
+        # the other fetch scripts are invoked.
+        run: python log_daily_prices.py
+        working-directory: src
+
+      - name: Commit if the log changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- data/processed/uganda_grades_log.csv; then
+            echo "No new prices today; nothing to commit."
+          else
+            git add data/processed/uganda_grades_log.csv
+            git commit -m "Log Uganda coffee prices for $(date -u +%Y-%m-%d)"
+            git push
+          fi

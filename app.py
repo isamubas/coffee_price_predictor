@@ -6,6 +6,7 @@ regression that predicts a chosen grade from those drivers.
 
 Runs locally (`streamlit run app.py`) or as a Hugging Face Space.
 """
+import sys
 from pathlib import Path
 
 import pandas as pd
@@ -52,13 +53,26 @@ def load_merged() -> pd.DataFrame:
     return df
 
 
-@st.cache_data
-def load_snapshot() -> pd.DataFrame:
-    return pd.read_csv(DATA_PROCESSED / "uganda_grades_snapshot.csv")
+@st.cache_data(ttl=3600)
+def load_snapshot() -> tuple[pd.DataFrame, bool]:
+    """Current prices — fetched live, falling back to the committed CSV.
+
+    Fetching live is what keeps a deployed Space current without a redeploy.
+    Cached for an hour so page views don't hammer the upstream feed, and any
+    network failure degrades to the last committed snapshot rather than
+    taking the whole page down.
+    """
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))
+        from fetch_uganda_prices import fetch_market_snapshot, snapshot_to_frame
+
+        return snapshot_to_frame(fetch_market_snapshot(attempts=2, timeout=10)), True
+    except Exception:
+        return pd.read_csv(DATA_PROCESSED / "uganda_grades_snapshot.csv"), False
 
 
 df = load_merged()
-snapshot = load_snapshot()
+snapshot, is_live = load_snapshot()
 
 # --- Currency -------------------------------------------------------------
 # Upstream quotes export grades in US cents/kg and farmgate in UGX/kg. We
@@ -110,7 +124,15 @@ fg_cols = st.columns(3)
 for i, row in enumerate(farmgate.itertuples()):
     fg_cols[i % 3].metric(row.grade, fmt(to_currency(row.price, "UGX/kg", fx_now)))
 
-st.caption(f"Snapshot from ugandacoffeeprices.com (UCDA), updated {snapshot['updated_utc'].iloc[0]}")
+source_note = (
+    "🟢 fetched live just now"
+    if is_live
+    else "🟠 live fetch unavailable — showing last committed snapshot"
+)
+st.caption(
+    f"ugandacoffeeprices.com (UCDA) · upstream updated "
+    f"{snapshot['updated_utc'].iloc[0]} · {source_note}"
+)
 
 with st.expander("⚠️ Data quality — read this before trusting the model"):
     st.markdown(
