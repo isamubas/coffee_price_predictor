@@ -1,6 +1,6 @@
 pandas
 openpyxl
 yfinance
-streamlit
+gradio
 plotly
 scikit-learn

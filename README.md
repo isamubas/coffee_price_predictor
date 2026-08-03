@@ -94,9 +94,10 @@ python src/merge_dataset.py
 
 ## Dashboard
 
-A Streamlit app (`app.py`) shows current prices across all 12 grades, price
+A Gradio app (`app.py`) shows current prices across all 12 grades, price
 history, driver correlations, and a baseline regression per grade evaluated
-with walk-forward (time-ordered) cross-validation.
+with walk-forward (time-ordered) cross-validation and scored against a
+random-walk baseline.
 
 Prices display in **UGX/kg by default**, switchable to USD/kg or US cents/kg
 from the sidebar. Upstream quotes mix units (export grades in US cents/kg,
@@ -106,21 +107,22 @@ Screen 18 FOB at $1.88/kg. Historical values convert at each month's own
 USD/UGX rate rather than today's.
 
 ```bash
-streamlit run app.py
+python app.py
 ```
 
 ### Deploying to Hugging Face Spaces
 
-Hugging Face no longer offers Streamlit as a native SDK — the only choices are
-`gradio`, `docker`, and `static`. This app therefore deploys as a **Docker
-Space**, using the `Dockerfile` at the repo root, which runs the unmodified
-Streamlit app on port 7860.
+Hugging Face offers three Space SDKs — `gradio`, `docker`, and `static`.
+Streamlit is no longer a native option, `docker` is gated behind a paid plan,
+and `static` cannot run Python. So this app is built with **Gradio**, the only
+free SDK that can run the model.
 
-1. Create a new Space and choose SDK **Docker** (blank template).
+1. Create a new Space, choose SDK **Gradio**, template **Blank**, hardware
+   **CPU basic** (free).
 2. Push this repo's contents to it.
-3. Replace the Space's `README.md` with `README_HF.md` — it carries the
-   required YAML frontmatter (`sdk: docker`, `app_port: 7860`) that GitHub
-   would otherwise render as plain text. Rename it or copy its contents over.
+3. Rename `README_HF.md` to `README.md` in the Space — it carries the required
+   YAML frontmatter (`sdk: gradio`, `app_file: app.py`) that GitHub would
+   otherwise render as plain text.
 
 ## Licence
 
