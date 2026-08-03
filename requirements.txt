@@ -1,3 +1,6 @@
 pandas
 openpyxl
 yfinance
+streamlit
+plotly
+scikit-learn

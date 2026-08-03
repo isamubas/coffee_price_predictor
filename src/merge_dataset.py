@@ -1,10 +1,18 @@
-"""Merge coffee, oil, Fed rate, and USD/UGX exchange rate into one monthly table.
+"""Merge Uganda coffee grade prices (targets) with their price drivers (features).
 
-Reads the CSVs already produced by fetch_coffee_prices.py, fetch_oil_price.py,
-fetch_fed_rate.py, and fetch_exchange_rate.py, resamples the daily UGX series
-to monthly averages, and joins everything on month. Also adds 1-month lagged
-coffee prices, since export revenue effects on the currency don't always show
-up the same month.
+Targets: Uganda FOB grade prices (USc/kg) — Bugisu AA/A/B (Arabica) and
+Screen 18/15/12 (Robusta).
+
+Features: the things that move those prices —
+  - world Arabica/Robusta prices (the dominant driver; export price explains
+    ~57% of Ugandan farm-gate price variation)
+  - USD/UGX (Uganda prices are quoted in USc but earned/spent across both)
+  - Brent crude (freight and input costs)
+  - US Fed funds rate (drives USD strength, which prices coffee globally)
+
+Note: the Uganda grade history covers Jan 2024 - Jun 2026 (30 months), so the
+merged dataset is limited to that window even though the feature series run
+back to 1960.
 """
 from pathlib import Path
 
@@ -12,10 +20,43 @@ import pandas as pd
 
 DATA_PROCESSED = Path(__file__).resolve().parent.parent / "data" / "processed"
 
+TARGET_COLS = [
+    "bugisu_aa",
+    "bugisu_a",
+    "bugisu_b",
+    "screen_18",
+    "screen_15",
+    "screen_12",
+]
+
+FEATURE_COLS = [
+    "arabica_usd_kg",
+    "robusta_usd_kg",
+    "usd_ugx_rate",
+    "brent_usd_bbl",
+    "fed_funds_rate",
+]
+
+
+def _load_indexed(filename: str) -> pd.DataFrame:
+    df = pd.read_csv(DATA_PROCESSED / filename, parse_dates=["date"])
+    return df.set_index("date")
+
+
+def load_uganda_grades() -> pd.DataFrame:
+    return _load_indexed("uganda_grades_monthly.csv")
+
 
 def load_monthly_coffee() -> pd.DataFrame:
-    df = pd.read_csv(DATA_PROCESSED / "coffee_monthly_worldbank.csv", parse_dates=["date"])
-    return df.set_index("date")
+    return _load_indexed("coffee_monthly_worldbank.csv")
+
+
+def load_monthly_oil() -> pd.DataFrame:
+    return _load_indexed("oil_monthly_worldbank.csv")
+
+
+def load_monthly_fed_rate() -> pd.DataFrame:
+    return _load_indexed("fed_funds_rate_monthly.csv")
 
 
 def load_monthly_ugx() -> pd.DataFrame:
@@ -25,47 +66,34 @@ def load_monthly_ugx() -> pd.DataFrame:
     return monthly.to_frame()
 
 
-def load_monthly_oil() -> pd.DataFrame:
-    df = pd.read_csv(DATA_PROCESSED / "oil_monthly_worldbank.csv", parse_dates=["date"])
-    return df.set_index("date")
-
-
-def load_monthly_fed_rate() -> pd.DataFrame:
-    df = pd.read_csv(DATA_PROCESSED / "fed_funds_rate_monthly.csv", parse_dates=["date"])
-    return df.set_index("date")
-
-
 def build_merged() -> pd.DataFrame:
-    coffee = load_monthly_coffee()
-    ugx = load_monthly_ugx()
-    oil = load_monthly_oil()
-    fed_rate = load_monthly_fed_rate()
+    targets = load_uganda_grades()
+    features = load_monthly_coffee().join(
+        [load_monthly_ugx(), load_monthly_oil(), load_monthly_fed_rate()], how="inner"
+    )
 
-    merged = coffee.join([ugx, oil, fed_rate], how="inner")
-    merged["arabica_usd_kg_lag1"] = merged["arabica_usd_kg"].shift(1)
-    merged["robusta_usd_kg_lag1"] = merged["robusta_usd_kg"].shift(1)
-    merged["brent_usd_bbl_lag1"] = merged["brent_usd_bbl"].shift(1)
+    merged = targets.join(features, how="inner")
+    merged.index.name = "date"
+
+    # World prices feed through to Ugandan quotes with a lag, so give the model
+    # last month's level as well as this month's.
+    for col in ["arabica_usd_kg", "robusta_usd_kg"]:
+        merged[f"{col}_lag1"] = merged[col].shift(1)
+
     return merged
 
 
 def main() -> None:
     merged = build_merged()
-    out_path = DATA_PROCESSED / "merged_monthly.csv"
-    merged.to_csv(out_path)
+    merged.to_csv(DATA_PROCESSED / "merged_monthly.csv")
     print(f"Saved {len(merged)} monthly rows -> data/processed/merged_monthly.csv")
     print(merged.tail())
 
-    print("\nCorrelation with usd_ugx_rate:")
-    feature_cols = [
-        "arabica_usd_kg",
-        "robusta_usd_kg",
-        "arabica_usd_kg_lag1",
-        "robusta_usd_kg_lag1",
-        "brent_usd_bbl",
-        "brent_usd_bbl_lag1",
-        "fed_funds_rate",
-    ]
-    print(merged[feature_cols].corrwith(merged["usd_ugx_rate"]).round(3))
+    print("\nFeature correlation with each Uganda grade:")
+    corr = pd.DataFrame(
+        {target: merged[FEATURE_COLS].corrwith(merged[target]) for target in TARGET_COLS}
+    )
+    print(corr.round(3))
 
 
 if __name__ == "__main__":
