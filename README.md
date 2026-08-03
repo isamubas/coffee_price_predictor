@@ -94,46 +94,53 @@ python src/merge_dataset.py
 
 ## Dashboard
 
-A Gradio app (`app.py`) shows current prices across all 12 grades, price
-history, driver correlations, and a baseline regression per grade evaluated
-with walk-forward (time-ordered) cross-validation and scored against a
-random-walk baseline.
+The dashboard shows current prices across all 12 grades, price history, driver
+correlations, and a baseline regression per grade evaluated with walk-forward
+(time-ordered) cross-validation and scored against a random-walk baseline.
 
-Prices display in **UGX/kg by default**, switchable to USD/kg or US cents/kg
-from the sidebar. Upstream quotes mix units (export grades in US cents/kg,
-farmgate in UGX/kg), so normalising to one unit is what makes the
-farmgate-vs-export gap directly comparable — e.g. Kiboko at $1.48/kg against
-Screen 18 FOB at $1.88/kg. Historical values convert at each month's own
-USD/UGX rate rather than today's.
+Prices display in **UGX/kg by default**, switchable to USD/kg or US cents/kg.
+Upstream quotes mix units (export grades in US cents/kg, farmgate in UGX/kg),
+so normalising to one unit is what makes the farmgate-vs-export gap directly
+comparable — e.g. Kiboko at $1.48/kg against Screen 18 FOB at $1.88/kg.
+Historical values convert at each month's own USD/UGX rate rather than today's.
+
+There are two front-ends:
+
+| | Built by | Use |
+|---|---|---|
+| `index.html` | `src/build_static_site.py` | What gets deployed. Self-contained page, interactive Plotly charts, no server. |
+| `app.py` | Gradio | Optional local interactive version. Needs `pip install -r requirements-app.txt`. |
 
 ```bash
-python app.py
+python src/build_static_site.py   # regenerate index.html
+python app.py                     # optional local Gradio version
 ```
 
 ### Deploying to Hugging Face Spaces
 
 Hugging Face offers three Space SDKs — `gradio`, `docker`, and `static`.
-Streamlit is no longer a native option, `docker` is gated behind a paid plan,
-and `static` cannot run Python. So this app is built with **Gradio**, the only
-free SDK that can run the model.
+Streamlit is no longer offered, and on a free account both `docker` and Gradio
+on `cpu-basic` require PRO (Gradio is free only on ZeroGPU hardware, which
+additionally requires a verified email and an account older than 30 days).
 
-1. Create a new Space, choose SDK **Gradio**, template **Blank**, hardware
-   **ZeroGPU** (on free accounts ZeroGPU is the free tier; CPU Basic requires
-   PRO).
+**Static Spaces are free for everyone with no conditions**, so that is what
+this project targets. Static Spaces cannot run Python — so Python runs ahead of
+time in CI instead, and `src/build_static_site.py` bakes the prices, charts and
+model results into `index.html`. The Plotly charts stay fully interactive
+client-side, and the daily GitHub Action regenerates the page, so it stays
+current without a server.
+
+1. Create a new Space, choose SDK **Static**, template **Blank**.
 2. Push this repo's contents to it.
 3. Rename `README_HF.md` to `README.md` in the Space — it carries the required
-   YAML frontmatter (`sdk: gradio`, `app_file: app.py`) that GitHub would
+   YAML frontmatter (`sdk: static`, `app_file: index.html`) that GitHub would
    otherwise render as plain text.
 
-**On ZeroGPU:** this app never requests a GPU. ZeroGPU allocates one only when
-a function decorated with `@spaces.GPU` is called, and nothing here is
-decorated — the workload is pandas/scikit-learn/plotly, which is CPU work that
-finishes in milliseconds. The app therefore runs normally and consumes **none**
-of the daily GPU quota. Do not add `@spaces.GPU` to these functions; it would
-spend quota for no benefit.
-
-Free personal accounts can host up to 2 ZeroGPU Spaces, and the account must
-have a verified email and be older than 30 days.
+If you do have a PRO account or ZeroGPU eligibility and would rather deploy the
+interactive Gradio version, `app.py` works as-is with `sdk: gradio` and
+`app_file: app.py`. Note that nothing in it is decorated with `@spaces.GPU`,
+and nothing should be — the workload is CPU work finishing in milliseconds, so
+decorating it would spend the daily GPU quota for no benefit.
 
 ## Licence
 
@@ -160,6 +167,7 @@ ugandacoffeeprices.com, or sourcing directly from UCDA.
 - [x] Baseline regression + dashboard
 - [x] Daily logger to build genuine Uganda price history (`src/log_daily_prices.py`,
       run automatically by `.github/workflows/daily-prices.yml`)
+- [x] Static dashboard deployable free on HF Spaces (`src/build_static_site.py`)
 - [ ] Add BRL/VND currencies and El Niño (ONI) index
 - [ ] Add rainfall data (CHIRPS, East Africa coverage)
 - [ ] Parse UCDA PDF reports for authoritative history

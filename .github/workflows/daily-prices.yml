@@ -31,14 +31,26 @@ jobs:
         run: python log_daily_prices.py
         working-directory: src
 
-      - name: Commit if the log changed
+      - name: Refresh the current-prices snapshot
+        run: python fetch_uganda_prices.py
+        working-directory: src
+
+      - name: Rebuild the static dashboard
+        # Static Spaces cannot run Python, so the page is generated here and
+        # served as plain HTML.
+        run: python build_static_site.py
+        working-directory: src
+
+      - name: Commit if anything changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet -- data/processed/uganda_grades_log.csv; then
-            echo "No new prices today; nothing to commit."
+          git add data/processed/uganda_grades_log.csv \
+                  data/processed/uganda_grades_snapshot.csv \
+                  index.html
+          if git diff --cached --quiet; then
+            echo "Nothing changed today; nothing to commit."
           else
-            git add data/processed/uganda_grades_log.csv
-            git commit -m "Log Uganda coffee prices for $(date -u +%Y-%m-%d)"
+            git commit -m "Update prices and rebuild dashboard for $(date -u +%Y-%m-%d)"
             git push
           fi

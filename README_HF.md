@@ -3,9 +3,8 @@ title: Uganda Coffee Price Predictor
 emoji: ☕
 colorFrom: green
 colorTo: yellow
-sdk: gradio
-sdk_version: 6.22.0
-app_file: app.py
+sdk: static
+app_file: index.html
 pinned: false
 license: apache-2.0
 short_description: Predicting Ugandan coffee prices by grade from global drivers
@@ -17,9 +16,12 @@ Predicting Ugandan coffee prices by grade — Bugisu AA/A/B (Arabica) and
 Screen 18/15/12 (Robusta) — from the forces that move them: world
 Arabica/Robusta prices, the USD/UGX rate, Brent crude, and US Fed policy.
 
-Shows live prices across all 12 UCDA-tracked grades (export FOB and farmgate),
-price history, driver correlations, and a baseline regression evaluated with
-walk-forward cross-validation.
+Shows prices across all 12 UCDA-tracked grades (export FOB and farmgate) in
+UGX, USD, or US cents; price history; driver correlations; and a baseline
+regression evaluated with walk-forward cross-validation against a random-walk
+baseline.
+
+Rebuilt daily by a GitHub Action, so prices and model results stay current.
 
 ⚠️ The 30-month grade history is approximate (static fallback data from the
 source page, not a live UCDA feed), and there are effectively 2 independent

@@ -1,0 +1,5 @@
+# Optional: only needed to run the interactive local dashboard (app.py).
+# The deployed Space is a static page built by src/build_static_site.py,
+# which needs nothing beyond requirements.txt.
+-r requirements.txt
+gradio

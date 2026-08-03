@@ -1,6 +1,7 @@
+# Core: data fetching, modelling, and static site generation.
+# The optional local Gradio app needs requirements-app.txt as well.
 pandas
 openpyxl
 yfinance
-gradio
 plotly
 scikit-learn
