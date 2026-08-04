@@ -1,13 +1,13 @@
 grade_key,grade,price,currency,level,updated_utc,usd_ugx_rate
-screen_18,Screen 18,187.8,USc/kg,fob,2026-08-03T03:01:45.652668+00:00,3724.68
-screen_15,Screen 15,182.8,USc/kg,fob,2026-08-03T03:01:45.652668+00:00,3724.68
-screen_12,Screen 12,179.8,USc/kg,fob,2026-08-03T03:01:45.652668+00:00,3724.68
-bugisu_aa,Bugisu Aa,318.05,USc/kg,fob,2026-08-03T03:01:45.652668+00:00,3724.68
-bugisu_a,Bugisu A,317.05,USc/kg,fob,2026-08-03T03:01:45.652668+00:00,3724.68
-bugisu_pb,Bugisu Pb,317.05,USc/kg,fob,2026-08-03T03:01:45.652668+00:00,3724.68
-bugisu_b,Bugisu B,315.05,USc/kg,fob,2026-08-03T03:01:45.652668+00:00,3724.68
-wugar,Wugar,316.05,USc/kg,fob,2026-08-03T03:01:45.652668+00:00,3724.68
-drugar,Drugar,297.05,USc/kg,fob,2026-08-03T03:01:45.652668+00:00,3724.68
-kiboko,Kiboko,5500.0,UGX/kg,farmgate,2026-08-03T03:01:45.652668+00:00,3724.68
-faq,Faq,12000.0,UGX/kg,farmgate,2026-08-03T03:01:45.652668+00:00,3724.68
-arabica_parchment,Arabica Parchment,16000.0,UGX/kg,farmgate,2026-08-03T03:01:45.652668+00:00,3724.68
+screen_18,Screen 18,187.8,USc/kg,fob,2026-08-03T03:01:45.652668+00:00,3698.65
+screen_15,Screen 15,182.8,USc/kg,fob,2026-08-03T03:01:45.652668+00:00,3698.65
+screen_12,Screen 12,179.8,USc/kg,fob,2026-08-03T03:01:45.652668+00:00,3698.65
+bugisu_aa,Bugisu Aa,318.05,USc/kg,fob,2026-08-03T03:01:45.652668+00:00,3698.65
+bugisu_a,Bugisu A,317.05,USc/kg,fob,2026-08-03T03:01:45.652668+00:00,3698.65
+bugisu_pb,Bugisu Pb,317.05,USc/kg,fob,2026-08-03T03:01:45.652668+00:00,3698.65
+bugisu_b,Bugisu B,315.05,USc/kg,fob,2026-08-03T03:01:45.652668+00:00,3698.65
+wugar,Wugar,316.05,USc/kg,fob,2026-08-03T03:01:45.652668+00:00,3698.65
+drugar,Drugar,297.05,USc/kg,fob,2026-08-03T03:01:45.652668+00:00,3698.65
+kiboko,Kiboko,5500.0,UGX/kg,farmgate,2026-08-03T03:01:45.652668+00:00,3698.65
+faq,Faq,12000.0,UGX/kg,farmgate,2026-08-03T03:01:45.652668+00:00,3698.65
+arabica_parchment,Arabica Parchment,16000.0,UGX/kg,farmgate,2026-08-03T03:01:45.652668+00:00,3698.65
