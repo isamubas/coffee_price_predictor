@@ -62,6 +62,21 @@ Full analysis with reproducible evidence: [notes/why-the-model-fails.md](notes/w
 python src/diagnose_model.py   # regenerates every number in that note
 ```
 
+## Notebook
+
+[`notebooks/walk-forward-audit.ipynb`](notebooks/walk-forward-audit.ipynb) walks
+through the same finding as a narrative — build the model, watch it score 0.88
+in-sample, then audit it properly and watch it lose to a random walk. It is
+written for Kaggle: it loads `merged_monthly.csv` over HTTPS from this repo, so
+it needs no attached dataset and stays in step with whatever is committed here.
+
+The notebook is generated, not hand-edited, so its numbers cannot drift from
+`src/diagnose_model.py`:
+
+```bash
+python notebooks/build_notebook.py
+```
+
 ## ⚠️ Data quality caveats
 
 Read these before trusting any model output:
