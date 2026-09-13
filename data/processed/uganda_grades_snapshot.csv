@@ -1,13 +1,14 @@
 grade_key,grade,price,currency,level,updated_utc,usd_ugx_rate
-screen_18,Screen 18,173.83,USc/kg,fob,2026-09-11T03:00:28.463204+00:00,3735.54
-screen_15,Screen 15,168.83,USc/kg,fob,2026-09-11T03:00:28.463204+00:00,3735.54
-screen_12,Screen 12,165.83,USc/kg,fob,2026-09-11T03:00:28.463204+00:00,3735.54
-bugisu_aa,Bugisu Aa,287.05,USc/kg,fob,2026-09-11T03:00:28.463204+00:00,3735.54
-bugisu_a,Bugisu A,286.05,USc/kg,fob,2026-09-11T03:00:28.463204+00:00,3735.54
-bugisu_pb,Bugisu Pb,286.05,USc/kg,fob,2026-09-11T03:00:28.463204+00:00,3735.54
-bugisu_b,Bugisu B,284.05,USc/kg,fob,2026-09-11T03:00:28.463204+00:00,3735.54
-wugar,Wugar,285.05,USc/kg,fob,2026-09-11T03:00:28.463204+00:00,3735.54
-drugar,Drugar,266.05,USc/kg,fob,2026-09-11T03:00:28.463204+00:00,3735.54
-kiboko,Kiboko,5000.0,UGX/kg,farmgate,2026-09-11T03:00:28.463204+00:00,3735.54
-faq,Faq,11500.0,UGX/kg,farmgate,2026-09-11T03:00:28.463204+00:00,3735.54
-arabica_parchment,Arabica Parchment,15000.0,UGX/kg,farmgate,2026-09-11T03:00:28.463204+00:00,3735.54
+screen_18,Screen 18,177.54,USc/kg,fob,2026-09-13T03:05:05.090714+00:00,3754.87
+screen_15,Screen 15,172.54,USc/kg,fob,2026-09-13T03:05:05.090714+00:00,3754.87
+screen_12,Screen 12,169.54,USc/kg,fob,2026-09-13T03:05:05.090714+00:00,3754.87
+bugisu_aa,Bugisu AA,283.45,USc/kg,fob,2026-09-13T03:05:05.090714+00:00,3754.87
+bugisu_a,Bugisu A,282.45,USc/kg,fob,2026-09-13T03:05:05.090714+00:00,3754.87
+bugisu_pb,Bugisu PB,282.45,USc/kg,fob,2026-09-13T03:05:05.090714+00:00,3754.87
+bugisu_b,Bugisu B,280.45,USc/kg,fob,2026-09-13T03:05:05.090714+00:00,3754.87
+wugar,Wugar,281.45,USc/kg,fob,2026-09-13T03:05:05.090714+00:00,3754.87
+drugar,Drugar,262.45,USc/kg,fob,2026-09-13T03:05:05.090714+00:00,3754.87
+kiboko,Kiboko,5000.0,UGX/kg,farmgate,2026-09-13T03:05:05.090714+00:00,3754.87
+faq,FAQ,11500.0,UGX/kg,farmgate,2026-09-13T03:05:05.090714+00:00,3754.87
+arabica_parchment,Arabica Parchment,15000.0,UGX/kg,farmgate,2026-09-13T03:05:05.090714+00:00,3754.87
+drugar_clean,Drugar Coffee (Clean),14500.0,USc/kg,fob,2026-09-13T03:05:05.090714+00:00,3754.87
