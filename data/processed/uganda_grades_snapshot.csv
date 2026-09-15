@@ -1,14 +1,14 @@
 grade_key,grade,price,currency,level,updated_utc,usd_ugx_rate
-screen_18,Screen 18,177.54,USc/kg,fob,2026-09-14T03:00:35.722372+00:00,3796.34
-screen_15,Screen 15,172.54,USc/kg,fob,2026-09-14T03:00:35.722372+00:00,3796.34
-screen_12,Screen 12,169.54,USc/kg,fob,2026-09-14T03:00:35.722372+00:00,3796.34
-bugisu_aa,Bugisu AA,283.45,USc/kg,fob,2026-09-14T03:00:35.722372+00:00,3796.34
-bugisu_a,Bugisu A,282.45,USc/kg,fob,2026-09-14T03:00:35.722372+00:00,3796.34
-bugisu_pb,Bugisu PB,282.45,USc/kg,fob,2026-09-14T03:00:35.722372+00:00,3796.34
-bugisu_b,Bugisu B,280.45,USc/kg,fob,2026-09-14T03:00:35.722372+00:00,3796.34
-wugar,Wugar,281.45,USc/kg,fob,2026-09-14T03:00:35.722372+00:00,3796.34
-drugar,Drugar,262.45,USc/kg,fob,2026-09-14T03:00:35.722372+00:00,3796.34
-kiboko,Kiboko,5000.0,UGX/kg,farmgate,2026-09-14T03:00:35.722372+00:00,3796.34
-faq,FAQ,11500.0,UGX/kg,farmgate,2026-09-14T03:00:35.722372+00:00,3796.34
-arabica_parchment,Arabica Parchment,15000.0,UGX/kg,farmgate,2026-09-14T03:00:35.722372+00:00,3796.34
-drugar_clean,Drugar Coffee (Clean),14500.0,USc/kg,fob,2026-09-14T03:00:35.722372+00:00,3796.34
+screen_18,Screen 18,176.23,USc/kg,fob,2026-09-15T03:00:30.385368+00:00,3818.02
+screen_15,Screen 15,171.23,USc/kg,fob,2026-09-15T03:00:30.385368+00:00,3818.02
+screen_12,Screen 12,168.23,USc/kg,fob,2026-09-15T03:00:30.385368+00:00,3818.02
+bugisu_aa,Bugisu AA,280.7,USc/kg,fob,2026-09-15T03:00:30.385368+00:00,3818.02
+bugisu_a,Bugisu A,279.7,USc/kg,fob,2026-09-15T03:00:30.385368+00:00,3818.02
+bugisu_pb,Bugisu PB,279.7,USc/kg,fob,2026-09-15T03:00:30.385368+00:00,3818.02
+bugisu_b,Bugisu B,277.7,USc/kg,fob,2026-09-15T03:00:30.385368+00:00,3818.02
+wugar,Wugar,278.7,USc/kg,fob,2026-09-15T03:00:30.385368+00:00,3818.02
+drugar,Drugar,259.7,USc/kg,fob,2026-09-15T03:00:30.385368+00:00,3818.02
+kiboko,Kiboko,5000.0,UGX/kg,farmgate,2026-09-15T03:00:30.385368+00:00,3818.02
+faq,FAQ,11500.0,UGX/kg,farmgate,2026-09-15T03:00:30.385368+00:00,3818.02
+arabica_parchment,Arabica Parchment,15000.0,UGX/kg,farmgate,2026-09-15T03:00:30.385368+00:00,3818.02
+drugar_clean,Drugar Coffee (Clean),14500.0,USc/kg,fob,2026-09-15T03:00:30.385368+00:00,3818.02
